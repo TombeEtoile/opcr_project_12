@@ -1,16 +1,36 @@
-# This is a sample Python script.
+import argparse
+from cli.cli_support_team import support_team_parser
+from cli.cli_management_team import management_team_parser
+from cli.cli_sale_team import sale_team_parser
+from cli.cli_client import client_parser
+from cli.cli_contract import contract_parser
+from cli.cli_event import event_parser
+from cli.cli_collaborator import collaborator_parser
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+parser = argparse.ArgumentParser(description="Gestion de l'application CLI")
+subparsers = parser.add_subparsers(dest="command")
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+# SUBPARSERS
+# Client
+client_parser(subparsers)
+# Contract
+contract_parser(subparsers)
+# Event
+event_parser(subparsers)
+# Collaborator
+collaborator_parser(subparsers)
+# Sale team
+sale_team_parser(subparsers)
+# Support team
+support_team_parser(subparsers)
+# Management team
+management_team_parser(subparsers)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# Éxécute la commande
+args = parser.parse_args()
+if hasattr(args, "func"):
+    args.func(args)
+else:
+    parser.print_help()
