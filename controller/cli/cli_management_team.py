@@ -4,13 +4,8 @@ from config.database import Session
 
 def list_management_team_collaborators(args):
     """
-        Liste les collaborateurs de la table ManagementTeam.
-
         Utilisation :
             python main.py management_team list
-
-        Affiche :
-            Affiche la liste de la management team, incluant le nom, l'email et le téléphone.
     """
     session = Session()
     users = session.query(ManagementTeam).all()
@@ -22,15 +17,8 @@ def list_management_team_collaborators(args):
 
 def add_management_team_collaborator(args):
     """
-    Ajoute un collaborateur dans la table ManagementTeam.
-
     Utilisation :
         python main.py management_team add "Nom" "email@example.com" "0123456789"
-
-    Paramètres :
-    ----------
-    args : argparse.Namespace
-        Les arguments contenant le nom, l'email et le téléphone de l'utilisateur.
     """
 
     session = Session()
@@ -41,9 +29,31 @@ def add_management_team_collaborator(args):
     session.close()
 
 
+def delete_manager(args):
+    """
+    Utilisation :
+        python main.py manager delete <id_manager>
+    """
+    session = Session()
+
+    manager_to_delete = session.query(ManagementTeam).get(args.id_manager)
+
+    if manager_to_delete:
+        session.delete(manager_to_delete)
+        session.commit()
+        print("Manageur supprimé avec succès.")
+    else:
+        print("Manageur introuvable.")
+
+    session.close()
+
+
 def management_team_parser(subparsers):
     cli_management_parser = subparsers.add_parser("management_team", help="Commandes pour ManagementTeam")
     management_team_subparsers = cli_management_parser.add_subparsers(dest="action")
+
+    list_parser = management_team_subparsers.add_parser("list", help="Lister les utilisateurs de ManagementTeam")
+    list_parser.set_defaults(func=list_management_team_collaborators)
 
     add_parser = management_team_subparsers.add_parser("add", help="Ajouter un utilisateur à ManagementTeam")
     add_parser.add_argument("name", type=str, help="Nom de l'utilisateur")
@@ -51,5 +61,7 @@ def management_team_parser(subparsers):
     add_parser.add_argument("phone", type=str, help="Téléphone de l'utilisateur")
     add_parser.set_defaults(func=add_management_team_collaborator)
 
-    list_parser = management_team_subparsers.add_parser("list", help="Lister les utilisateurs de ManagementTeam")
-    list_parser.set_defaults(func=list_management_team_collaborators)
+    delete_parser = management_team_subparsers.add_parser("delete", help="Supprimer un manager à la table "
+                                                                         "ManagementTeam")
+    delete_parser.add_argument("id_manager", type=int, help="L'identifiant du manageur à supprimer")
+    delete_parser.set_defaults(func=delete_manager)

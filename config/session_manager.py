@@ -7,3 +7,4 @@ Quand user se connect, créer un fichier session qui prend l'id de sa team
 permission = si utilisateur connecté = id xxx il peut faire telle ou telle chose
 
 """
+

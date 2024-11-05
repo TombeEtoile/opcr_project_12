@@ -4,13 +4,8 @@ from config.database import Session
 
 def list_sale_team_collaborators(args):
     """
-        Liste les collaborateurs de la table SaleTeam.
-
         Utilisation :
             python main.py sale_team list
-
-        Affiche :
-            Affiche la liste de la sale team, incluant le nom, l'email et le téléphone.
     """
     session = Session()
     users = session.query(SaleTeam).all()
@@ -22,15 +17,8 @@ def list_sale_team_collaborators(args):
 
 def add_sale_team_collaborator(args):
     """
-        Ajoute un collaborateur dans la table SaleTeam.
-
         Utilisation :
             python main.py sale_team add "Nom" "email@example.com" "0123456789"
-
-        Paramètres :
-        ----------
-        args : argparse.Namespace
-            Les arguments contenant le nom, l'email et le téléphone de l'utilisateur.
         """
     session = Session()
     new_user = SaleTeam(name=args.name, email=args.email, phone=args.phone)
@@ -40,9 +28,31 @@ def add_sale_team_collaborator(args):
     session.close()
 
 
+def delete_sale(args):
+    """
+    Utilisation :
+        python main.py sale delete <id_sale>
+    """
+    session = Session()
+
+    sale_to_delete = session.query(SaleTeam).get(args.id_sale)
+
+    if sale_to_delete:
+        session.delete(sale_to_delete)
+        session.commit()
+        print("Commercial supprimé avec succès.")
+    else:
+        print("Commercial introuvable.")
+
+    session.close()
+
+
 def sale_team_parser(subparsers):
     cli_sale_parser = subparsers.add_parser("sale_team", help="Commandes pour SaleTeam")
     sale_team_subparsers = cli_sale_parser.add_subparsers(dest="action")
+
+    list_parser = sale_team_subparsers.add_parser("list", help="Lister les utilisateurs de SaleTeam")
+    list_parser.set_defaults(func=list_sale_team_collaborators)
 
     add_parser = sale_team_subparsers.add_parser("add", help="Ajouter un utilisateur à SaleTeam")
     add_parser.add_argument("name", type=str, help="Nom de l'utilisateur")
@@ -50,5 +60,6 @@ def sale_team_parser(subparsers):
     add_parser.add_argument("phone", type=str, help="Téléphone de l'utilisateur")
     add_parser.set_defaults(func=add_sale_team_collaborator)
 
-    list_parser = sale_team_subparsers.add_parser("list", help="Lister les utilisateurs de SaleTeam")
-    list_parser.set_defaults(func=list_sale_team_collaborators)
+    delete_parser = sale_team_subparsers.add_parser("delete", help="Supprimer un commercial à la table SaleTeam")
+    delete_parser.add_argument("id_sale", type=int, help="L'identifiant du commerciel à supprimer")
+    delete_parser.set_defaults(func=delete_sale)

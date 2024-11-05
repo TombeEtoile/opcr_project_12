@@ -157,6 +157,21 @@ class ManagementTeam(Base):
     def __repr__(self):
         return f'Management team {self.name}'
 
-
+'''
 engine = create_engine('sqlite:///database/epic_events_bdd.db', echo=True)
 Base.metadata.create_all(engine)
+'''
+'''
+OU
+
+
+import os
+
+# Définir le chemin absolu de la base de données
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_PATH = os.path.join(BASE_DIR, '../database/epic_events_bdd.db')
+
+# Créer l'engine avec le chemin absolu
+engine = create_engine(f'sqlite:///{DATABASE_PATH}', echo=True)
+Base.metadata.create_all(engine)
+'''

@@ -5,13 +5,8 @@ from datetime import datetime
 
 def list_event(args):
     """
-    Liste les events de la table Event
-
     Utilisation :
         python main.py event list
-
-    Affiche :
-        Affiche la liste des events incluant l'id du client relié, son nom, son email, son tel, la date de début de l'event, la date de fin, le contact du support (nom, email et tel), la localisation de l'event, et une note à propos de cet event.
     """
     session = Session()
     events = session.query(Event).all()
@@ -25,27 +20,8 @@ def list_event(args):
 
 def add_event(args):
     """
-       Ajoute un événement dans la table Event.
-
        Utilisation :
            python main.py event add "01/05/2024" "02/05/2024" "Paris" 150 "Célébration d'entreprise" 2 1 3
-
-       Paramètres :
-       ----------
-       args : argparse.Namespace
-           Les arguments contenant les informations de l'événement :
-           - event_date_start (str) : Date de début de l'événement (format 'dd/mm/yyyy').
-           - event_date_end (str) : Date de fin de l'événement (format 'dd/mm/yyyy').
-           - location (str) : Lieu de l'événement.
-           - attendees (int) : Nombre de participants attendus.
-           - note (str) : Notes ou remarques spécifiques pour l'événement.
-           - id_contract (int) : ID du contrat associé à l'événement.
-           - id_client (int) : ID du client lié à l'événement.
-           - id_support_team (int) : ID de l'équipe support responsable de l'événement.
-
-       Actions :
-       --------
-       Vérifie que le contrat, le client et l'équipe support existent en base. Si tous sont présents, crée un nouvel enregistrement dans la table Event avec les informations fournies.
        """
     session = Session()
 
@@ -88,12 +64,69 @@ def add_event(args):
     session.close()
 
 
+def delete_event(args):
+    """
+    Utilisation :
+        python main.py event delete <id_event>
+    """
+    session = Session()
+
+    event_to_delete = session.query(Event).get(args.id_event)
+
+    if event_to_delete:
+        session.delete(event_to_delete)
+        session.commit()
+        print("Event supprimé avec succès.")
+    else:
+        print("Event introuvable.")
+
+    session.close()
+
+
+def update_event(args):
+    """
+    Utilisation :
+        python main.py event modify <event>
+    """
+    session = Session()
+
+    event = session.query(Event).get(args.event_id)
+
+    if not event:
+        print(f"Erreur : Aucun event trouvé avec l'ID {args.event_id}")
+        session.close()
+        return
+
+    if args.event_date_start:
+        event.event_date_start = args.event_date_start
+    if args.event_date_end:
+        event.event_date_end = args.event_date_end
+    if args.location:
+        event.location = args.location
+    if args.attendees:
+        event.attendees = args.attendees
+    if args.note:
+        event.note = args.note
+    if args.id_contract:
+        event.id_contract = args.id_contract
+    if args.id_client:
+        event.id_client = args.id_client
+    if args.id_support_team:
+        event.id_support_team = args.id_support_team
+
+    session.commit()
+    print(f"Événement {event.id} mis à jour avec succès : {event}")
+    session.close()
+
+
 def event_parser(subparsers):
     cli_event_parser = subparsers.add_parser("event", help="Commandes pour Event")
     event_subparsers = cli_event_parser.add_subparsers(dest="action")
 
-    add_parser = event_subparsers.add_parser("add", help="Ajouter un event à la table Event")
+    list_parser = event_subparsers.add_parser("list", help="Lister les lignes de la table Contract")
+    list_parser.set_defaults(func=list_event)
 
+    add_parser = event_subparsers.add_parser("add", help="Ajouter un event à la table Event")
     add_parser.add_argument("event_date_start", type=str,
                             help="Date de début de l'event (format 'dd/mm/yyyy')")
     add_parser.add_argument("event_date_end", type=str,
@@ -101,12 +134,24 @@ def event_parser(subparsers):
     add_parser.add_argument("location", type=str, help="Localisation de l'event")
     add_parser.add_argument("attendees", type=int, help="Nombre de participants à l'event")
     add_parser.add_argument("note", type=str, help="Notes à propos de l'event")
-
     add_parser.add_argument("id_contract", type=int, nargs='?', default=None, help="ID du contrat lié")
     add_parser.add_argument("id_client", type=int, nargs='?', default=None, help="ID du client lié")
     add_parser.add_argument("id_support_team", type=int, nargs='?', default=None, help="ID du support lié")
-
     add_parser.set_defaults(func=add_event)
 
-    list_parser = event_subparsers.add_parser("list", help="Lister les lignes de la table Contract")
-    list_parser.set_defaults(func=list_event)
+    delete_parser = event_subparsers.add_parser("delete", help="Supprimer un événement à la table Event")
+    delete_parser.add_argument("id_event", type=int, help="L'identifiant de l'événement à supprimer")
+    delete_parser.set_defaults(func=delete_event)
+
+    update_parser = event_subparsers.add_parser("update", help="Modifier les données d'un événement "
+                                                               "de la table Event")
+    update_parser.add_argument("event_id", type=int, help="ID de l'événement à mettre à jour")
+    update_parser.add_argument("--event_date_start", type=str, help="Date de début de l'événement")
+    update_parser.add_argument("--event_date_end", type=str, help="Date de fin de l'événement")
+    update_parser.add_argument("--location", type=str, help="Localisation de l'événement")
+    update_parser.add_argument("--attendees", type=int, help="Nombre de participant attendus à l'événement")
+    update_parser.add_argument("--note", type=str, help="Informations à propos de l'événement")
+    update_parser.add_argument("--id_contract", type=int, help="ID du contrat lié")
+    update_parser.add_argument("--id_client", type=int, help="ID du client lié")
+    update_parser.add_argument("--id_support_team", type=int, help="ID du support en charge")
+    update_parser.set_defaults(func=update_event)

@@ -5,19 +5,8 @@ import bcrypt
 
 def list_collaborators(args):
     """
-        Liste tous les collaborateurs enregistrés dans la table Collaborator.
-
         Utilisation :
             python main.py collaborator list
-
-        Affiche :
-            Affiche la liste des collaborateurs, incluant l'id, le nom, l'email, le téléphone, le type d'équipe
-            (sale, support, management) et l'id de l'équipe associée.
-
-        Paramètres :
-        ----------
-        args : argparse.Namespace
-            Les arguments de la ligne de commande fournis par argparse.
         """
     session = Session()
     collaborators = session.query(Collaborator).all()
@@ -39,26 +28,8 @@ def list_collaborators(args):
 
 def add_collaborator(args):
     """
-        Ajoute un nouveau collaborateur dans la table Collaborator et l'associe à une équipe spécifique (sale, support, management).
-
         Utilisation :
             python main.py collaborator add "Nom" "email@example.com" "0123456789" "MotDePasse" "team_type"
-
-        Paramètres :
-        ----------
-        args : argparse.Namespace
-            Les arguments de la ligne de commande contenant :
-            - name (str) : Nom du collaborateur.
-            - email (str) : Adresse email unique du collaborateur.
-            - phone (str) : Numéro de téléphone du collaborateur.
-            - password (str) : Mot de passe du collaborateur, qui sera haché.
-            - team_type (str) : Type d'équipe auquel le collaborateur est associé ('sale', 'support' ou 'management').
-
-        Actions :
-        --------
-        - Hache le mot de passe fourni.
-        - Crée une entrée dans la table d'équipe correspondante en fonction du type d'équipe.
-        - Associe le collaborateur à l'id de l'équipe nouvellement créée.
         """
     session = Session()
 
@@ -97,6 +68,55 @@ def add_collaborator(args):
     session.close()
 
 
+def delete_collaborator(args):
+    """
+    Utilisation :
+        python main.py collaborator delete <id_collaborator>
+    """
+    session = Session()
+
+    collaborator_to_delete = session.query(Collaborator).get(args.id_collaborator)
+
+    if collaborator_to_delete:
+        session.delete(collaborator_to_delete)
+        session.commit()
+        print("collaborator supprimé avec succès.")
+    else:
+        print("collaborator introuvable.")
+
+    session.close()
+
+
+def update_collaborator(args):
+    """
+    Utilisation :
+        python main.py collaborator modify <id_collaborator>
+    """
+    session = Session()
+
+    collaborator = session.query(Collaborator).get(args.collaborator_id)
+
+    if not collaborator:
+        print(f"Erreur : Aucun collaborateur trouvé avec l'ID {args.collaborator_id}")
+        session.close()
+        return
+
+    if args.name:
+        collaborator.name = args.name
+    if args.email:
+        collaborator.email = args.email
+    if args.phone:
+        collaborator.phone = args.phone
+    if args.password:
+        collaborator.password = args.password
+    if args.team_type:
+        collaborator.team_type = args.team_type
+
+    session.commit()
+    print(f"Événement {collaborator.id} mis à jour avec succès : {collaborator}")
+    session.close()
+
+
 def collaborator_parser(subparsers):
     """
         Configure les sous-commandes pour gérer les collaborateurs dans l'application CLI.
@@ -114,6 +134,9 @@ def collaborator_parser(subparsers):
     cli_collaborator_parser = subparsers.add_parser("collaborator", help="Commandes pour Collaborator")
     collaborator_subparsers = cli_collaborator_parser.add_subparsers(dest="action")
 
+    list_parser = collaborator_subparsers.add_parser("list", help="Lister les utilisateurs de Collaborator")
+    list_parser.set_defaults(func=list_collaborators)
+
     add_parser = collaborator_subparsers.add_parser("add", help="Ajouter un utilisateur à Collaborator")
     add_parser.add_argument("name", type=str, help="Nom de l'utilisateur")
     add_parser.add_argument("email", type=str, help="Email de l'utilisateur")
@@ -122,5 +145,23 @@ def collaborator_parser(subparsers):
     add_parser.add_argument("team_type", type=str, help="Team associé à l'utilisateur")
     add_parser.set_defaults(func=add_collaborator)
 
-    list_parser = collaborator_subparsers.add_parser("list", help="Lister les utilisateurs de Collaborator")
-    list_parser.set_defaults(func=list_collaborators)
+    delete_parser = collaborator_subparsers.add_parser("delete", help="Supprimer un collaborator à "
+                                                                      "la table Collaborator")
+    delete_parser.add_argument("id_collaborator", type=int, help="L'identifiant du collaborator à supprimer")
+    delete_parser.set_defaults(func=delete_collaborator)
+
+    update_parser = collaborator_subparsers.add_parser("update", help="Modifier les données d'un événement "
+                                                                      "de la table Collaborator")
+    update_parser.add_argument("collaborator_id", type=int, help="ID du collaborateur à mettre à jour")
+    update_parser.add_argument("--name", type=str, help="Nom du collaborateur")
+    update_parser.add_argument("--email", type=str, help="Email du collaborateur")
+    update_parser.add_argument("--phone", type=str, help="Téléphone du collaborateur")
+    update_parser.add_argument("--password", type=str, help="mot de passe du collaborateur")
+    update_parser.add_argument("--team_type", type=str, help="Équipe du collaborateur")
+    update_parser.set_defaults(func=update_collaborator)
+
+    name = args.name,
+    email = args.email,
+    phone = args.phone,
+    password = hashed_password.decode('utf-8'),
+    team_type = args.team_type
