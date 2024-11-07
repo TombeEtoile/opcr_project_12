@@ -3,7 +3,7 @@ from config.database import Session
 from datetime import datetime
 
 
-def list_client(args):
+def list_client():
     """
         Utilisation :
             python main.py client list
@@ -17,7 +17,7 @@ def list_client(args):
     session.close()
 
 
-def add_client(args):
+def add_client(name, email, phone, company, information, date_of_first_contract, last_maj, sale_contact_id):
     """
         Utilisation :
             python main.py client add "Nom Client" "email@example.com" "0123456789" "Nom Entreprise" "Informations" 23/05/2024 23/05/2024 1
@@ -25,38 +25,38 @@ def add_client(args):
     session = Session()
 
     # Conversion des dates
-    date_of_first_contract = datetime.strptime(args.date_of_first_contract, "%d/%m/%Y").date()
-    last_maj = datetime.strptime(args.last_maj, "%d/%m/%Y").date()
+    date_of_first_contract = datetime.strptime(date_of_first_contract, "%d/%m/%Y").date()
+    last_maj = datetime.strptime(last_maj, "%d/%m/%Y").date()
 
-    sale_contact = session.query(SaleTeam).get(args.sale_contact_id)
+    sale_contact = session.query(SaleTeam).get(sale_contact_id)
 
     if sale_contact:
-        new_client = Client(name=args.name,
-                            email=args.email,
-                            phone=args.phone,
-                            company=args.company,
-                            information=args.information,
+        new_client = Client(name=name,
+                            email=email,
+                            phone=phone,
+                            company=company,
+                            information=information,
                             date_of_first_contract=date_of_first_contract,
                             last_maj=last_maj,
-                            id_sale_contact=args.sale_contact_id)
+                            id_sale_contact=sale_contact_id)
         session.add(new_client)
         session.commit()
         print(f'{new_client} a bien été ajouté à la table Client')
 
     else:
-        print(f"Erreur : Aucun commercial trouvé avec l'ID {args.sale_contact_id}")
+        print(f"Erreur : Aucun commercial trouvé avec l'ID {sale_contact_id}")
 
     session.close()
 
 
-def delete_client(args):
+def delete_client(id_client):
     """
     Utilisation :
         python main.py client delete <id_client>
     """
     session = Session()
 
-    client_to_delete = session.query(Client).get(args.id_client)
+    client_to_delete = session.query(Client).get(id_client)
 
     if client_to_delete:
         session.delete(client_to_delete)
@@ -68,34 +68,34 @@ def delete_client(args):
     session.close()
 
 
-def update_client(args):
+def update_client(client_id, name, email, phone, company, information, date_of_first_contract, last_maj, sale_contact_id):
     """
     Utilisation :
         python main.py client update <id_client>
     """
     session = Session()
 
-    client = session.query(Client).get(args.client_id)
+    client = session.query(Client).get(client_id)
 
     if not client:
-        print(f"Erreur : Aucun client trouvé avec l'ID {args.client_id}")
+        print(f"Erreur : Aucun client trouvé avec l'ID {client_id}")
         session.close()
         return
 
-    if args.name:
-        client.name = args.name
-    if args.email:
-        client.email = args.email
-    if args.phone:
-        client.phone = args.phone
-    if args.company:
-        client.company = args.company
-    if args.information:
-        client.information = args.information
-    if args.date_of_first_contract:
-        client.date_of_first_contract = args.date_of_first_contract
-    if args.last_maj:
-        client.last_maj = args.last_maj
+    if name:
+        client.name = name
+    if email:
+        client.email = email
+    if phone:
+        client.phone = phone
+    if company:
+        client.company = company
+    if information:
+        client.information = information
+    if date_of_first_contract:
+        client.date_of_first_contract = date_of_first_contract
+    if last_maj:
+        client.last_maj = last_maj
 
     session.commit()
     print(f"Client {client.id} mis à jour avec succès : {client}")

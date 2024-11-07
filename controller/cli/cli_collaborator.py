@@ -3,7 +3,7 @@ from config.database import Session
 import bcrypt
 
 
-def list_collaborators(args):
+def list_collaborators():
     """
         Utilisation :
             python main.py collaborator list
@@ -26,37 +26,37 @@ def list_collaborators(args):
     session.close()
 
 
-def add_collaborator(args):
+def add_collaborator(name, email, phone, password, team_type):
     """
         Utilisation :
             python main.py collaborator add "Nom" "email@example.com" "0123456789" "MotDePasse" "team_type"
         """
     session = Session()
 
-    hashed_password = bcrypt.hashpw(args.password.encode('utf-8'), bcrypt.gensalt())
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
     # Créer un nouveau collaborateur
-    new_collaborator = Collaborator(name=args.name,
-                                    email=args.email,
-                                    phone=args.phone,
+    new_collaborator = Collaborator(name=name,
+                                    email=email,
+                                    phone=phone,
                                     password=hashed_password.decode('utf-8'),
-                                    team_type=args.team_type)
+                                    team_type=team_type)
 
     # Ajouter l'utilisateur dans la table d'équipe correspondante
-    if args.team_type == 'sale':
-        new_team_member = SaleTeam(name=args.name, email=args.email, phone=args.phone)
+    if team_type == 'commercial':
+        new_team_member = SaleTeam(name=name, email=email, phone=phone)
         session.add(new_team_member)
         session.commit()
         new_collaborator.id_team = new_team_member.id
 
-    elif args.team_type == 'support':
-        new_team_member = SupportTeam(name=args.name, email=args.email, phone=args.phone)
+    elif team_type == 'support':
+        new_team_member = SupportTeam(name=name, email=email, phone=phone)
         session.add(new_team_member)
         session.commit()
         new_collaborator.id_team = new_team_member.id
 
-    elif args.team_type == 'management':
-        new_team_member = ManagementTeam(name=args.name, email=args.email, phone=args.phone)
+    elif team_type == 'gestion':
+        new_team_member = ManagementTeam(name=name, email=email, phone=phone)
         session.add(new_team_member)
         session.commit()
         new_collaborator.id_team = new_team_member.id
@@ -64,18 +64,18 @@ def add_collaborator(args):
     # Ajouter le collaborateur avec l'ID d'équipe mis à jour
     session.add(new_collaborator)
     session.commit()
-    print(f"{new_collaborator} a bien été ajouté avec l'équipe {args.team_type}.")
+    print(f"{new_collaborator} a bien été ajouté avec l'équipe {team_type}.")
     session.close()
 
 
-def delete_collaborator(args):
+def delete_collaborator(id_collaborator):
     """
     Utilisation :
         python main.py collaborator delete <id_collaborator>
     """
     session = Session()
 
-    collaborator_to_delete = session.query(Collaborator).get(args.id_collaborator)
+    collaborator_to_delete = session.query(Collaborator).get(id_collaborator)
 
     if collaborator_to_delete:
         session.delete(collaborator_to_delete)
@@ -87,30 +87,30 @@ def delete_collaborator(args):
     session.close()
 
 
-def update_collaborator(args):
+def update_collaborator(collaborator_id, name, email, phone, password, team_type):
     """
     Utilisation :
         python main.py collaborator modify <id_collaborator>
     """
     session = Session()
 
-    collaborator = session.query(Collaborator).get(args.collaborator_id)
+    collaborator = session.query(Collaborator).get(collaborator_id)
 
     if not collaborator:
-        print(f"Erreur : Aucun collaborateur trouvé avec l'ID {args.collaborator_id}")
+        print(f"Erreur : Aucun collaborateur trouvé avec l'ID {collaborator_id}")
         session.close()
         return
 
-    if args.name:
-        collaborator.name = args.name
-    if args.email:
-        collaborator.email = args.email
-    if args.phone:
-        collaborator.phone = args.phone
-    if args.password:
-        collaborator.password = args.password
-    if args.team_type:
-        collaborator.team_type = args.team_type
+    if name:
+        collaborator.name = name
+    if email:
+        collaborator.email = email
+    if phone:
+        collaborator.phone = phone
+    if password:
+        collaborator.password = password
+    if team_type:
+        collaborator.team_type = team_type
 
     session.commit()
     print(f"Événement {collaborator.id} mis à jour avec succès : {collaborator}")
@@ -160,8 +160,3 @@ def collaborator_parser(subparsers):
     update_parser.add_argument("--team_type", type=str, help="Équipe du collaborateur")
     update_parser.set_defaults(func=update_collaborator)
 
-    name = args.name,
-    email = args.email,
-    phone = args.phone,
-    password = hashed_password.decode('utf-8'),
-    team_type = args.team_type

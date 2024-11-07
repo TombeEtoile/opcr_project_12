@@ -1,32 +1,44 @@
-from config.database import Session
-from models.models import Collaborator
 import bcrypt
-import json
-import tempfile
-import os
+from models.models import Collaborator
+from config.database import Session
 from view.registration_view import registration
+import json
+# import os
+
+from controller.user_route.menu import menu_answer
+# from controller.permissions import PERMISSIONS
 
 
-def login_user():
+def login():
+    mail, password = registration()
     session = Session()
 
-    user_answer = registration()
+    # Recherche le collaborateur avec l'adresse e-mail fournie
+    user = session.query(Collaborator).filter_by(email=mail).first()
 
-    # Recherche l'utilisateur dans la base de données
-    user = session.query(Collaborator).filter_by(email=user_answer[0]).first()
+    if user and bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+        print("Connexion réussie")
 
-    if user and bcrypt.checkpw(user_answer[1].encode('utf-8'), user.password.encode('utf-8')):
-        print("Connexion réussie.")
+        # Crée un fichier temporaire pour stocker les informations de session
+        session_data = {"email": user.email, "team_type": user.team_type}
+        with open("session_token.json", "w") as file:
+            json.dump(session_data, file)
 
-        # Créer un fichier temporaire pour stocker les informations utilisateur
-        # create_user_token(user)
+        print(f"Utilisateur connecté avec le rôle : {user.team_type}")
+        menu_answer()
 
-        session.close()
-        return user  # Peut être utilisé pour d'autres opérations si nécessaire
     else:
-        print("Email ou mot de passe incorrect.")
-        session.close()
-        return None
+        print("Erreur : e-mail ou mot de passe incorrect")
+
+    session.close()
 
 
-login_user()
+"""
+def logout():
+    # Déconnecte l'utilisateur en supprimant le fichier de session.
+    if os.path.exists("session_token.json"):
+        os.remove("session_token.json")
+        print("Déconnexion réussie.")
+    else:
+        print("Aucun utilisateur connecté.")
+"""

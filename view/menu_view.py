@@ -1,8 +1,9 @@
 def menu():
     print('-------------------- Menu général --------------------')
-    print('1 - ajouter/modifier/supprimer un contrat\n'
-          '2 - ajouter/modifier/supprimer un évènement\n'
-          '3 - ajouter/modifier/supprimer un client\n'
-          '4 - ajouter/modifier/supprimer un collaborateur')
+    print('1 - Contrat\n'
+          '2 - Évènement\n'
+          '3 - Client\n'
+          '4 - Collaborateur\n'
+          '5 - Déconnexion')
     answer_menu = input('choix : ')
     return answer_menu

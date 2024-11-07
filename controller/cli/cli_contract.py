@@ -3,15 +3,10 @@ from config.database import Session
 from datetime import datetime
 
 
-def list_contract(args):
+def list_contract():
     """
-        Liste les contracts de la table Contract.
-
         Utilisation :
             python main.py contract list
-
-        Affiche :
-            Affiche la liste des contracts, incluant le nom, l'email, le téléphone, l'entreprise et les informations supplémentaires.
     """
     session = Session()
     contracts = session.query(Contract).all()
@@ -22,57 +17,45 @@ def list_contract(args):
     session.close()
 
 
-def add_contract(args):
+def add_contract(contract_amount, remains_to_be_paid, contract_creation_date, contract_status,
+                 client_id, id_commercial_contact):
     """
-        Ajoute un contract dans la table Contract.
-
         Utilisation :
             python main.py contract add 1300.32 300.32 23/05/2024 "True (False par défaut)" 3 7
-
-        Paramètres :
-        ----------
-        args : argparse.Namespace
-            Les arguments contenant les informations du contract :
-            - contract_amount (float) : montant du contract.
-            - remains_to_be_paid (float) : reste à payer.
-            - contract_creation_date (str) : date de création du contrat, format "dd/mm/yyyy".
-            - contract_status (bool) : état du contrat (True = payé, False = à (finir de) payer).
-            - client_id (int) : ID du client.
-            - id_commercial_contact (int) : ID du commercial en charge.
         """
     session = Session()
 
-    contract_creation_date = datetime.strptime(args.contract_creation_date, "%d/%m/%Y").date()
+    contract_creation_date = datetime.strptime(contract_creation_date, "%d/%m/%Y").date()
 
-    client = session.query(Client).get(args.client_id)
-    sale_contact = session.query(SaleTeam).get(args.id_commercial_contact)
+    client = session.query(Client).get(client_id)
+    sale_contact = session.query(SaleTeam).get(id_commercial_contact)
 
     if client and sale_contact:
-        new_contract = Contract(contract_amount=args.contract_amount,
-                                remains_to_be_paid=args.remains_to_be_paid,
+        new_contract = Contract(contract_amount=contract_amount,
+                                remains_to_be_paid=remains_to_be_paid,
                                 contract_creation_date=contract_creation_date,
-                                contract_status=args.contract_status,
-                                client_id=args.client_id,
-                                id_commercial_contact=args.id_commercial_contact)
+                                contract_status=contract_status,
+                                client_id=client_id,
+                                id_commercial_contact=id_commercial_contact)
         session.add(new_contract)
         session.commit()
         print(f'{new_contract} a bien été ajouté à la table Contract')
 
     else:
         print(f"Erreur : Aucun commercial ou client n'a été trouvé avec l'ID "
-              f"{args.id_commercial_contact} ou {args.client_id}")
+              f"{id_commercial_contact} ou {client_id}")
 
     session.close()
 
 
-def delete_contract(args):
+def delete_contract(id_contract):
     """
     Utilisation :
         python main.py contract delete <id_contract>
     """
     session = Session()
 
-    contract_to_delete = session.query(Contract).get(args.id_contract)
+    contract_to_delete = session.query(Contract).get(id_contract)
 
     if contract_to_delete:
         session.delete(contract_to_delete)
@@ -84,32 +67,33 @@ def delete_contract(args):
     session.close()
 
 
-def update_contract(args):
+def update_contract(contract_id, contract_amount, remains_to_be_paid, contract_creation_date,
+                    contract_status, client_id, id_commercial_contact):
     """
     Utilisation :
         python main.py contract modify <id_contract>
     """
     session = Session()
 
-    contract = session.query(Contract).get(args.contract_id)
+    contract = session.query(Contract).get(contract_id)
 
     if not contract:
-        print(f"Erreur : Aucun contract trouvé avec l'ID {args.contract_id}")
+        print(f"Erreur : Aucun contract trouvé avec l'ID {contract_id}")
         session.close()
         return
 
-    if args.contract_amount:
-        contract.contract_amount = args.contract_amount
-    if args.remains_to_be_paid:
-        contract.remains_to_be_paid = args.remains_to_be_paid
-    if args.contract_creation_date:
-        contract.contract_creation_date = args.contract_creation_date
-    if args.contract_status:
-        contract.contract_status = args.contract_status
-    if args.client_id:
-        contract.client_id = args.client_id
-    if args.id_commercial_contact:
-        contract.id_commercial_contact = args.id_commercial_contact
+    if contract_amount:
+        contract.contract_amount = contract_amount
+    if remains_to_be_paid:
+        contract.remains_to_be_paid = remains_to_be_paid
+    if contract_creation_date:
+        contract.contract_creation_date = contract_creation_date
+    if contract_status:
+        contract.contract_status = contract_status
+    if client_id:
+        contract.client_id = client_id
+    if id_commercial_contact:
+        contract.id_commercial_contact = id_commercial_contact
 
     session.commit()
     print(f"Contrat {contract.id} mis à jour avec succès : {contract}")
