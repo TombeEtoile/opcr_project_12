@@ -1,27 +1,57 @@
-from models.models import Client, SaleTeam
+from models.models import Client, SaleTeam, Contract
 from config.database import Session
 from datetime import datetime
+from controller.permissions import has_permission
 
 
-def list_client():
-    """
-        Utilisation :
-            python main.py client list
-    """
-    session = Session()
-    clients = session.query(Client).all()
-    print('----- Client -----')
-    for client in clients:
-        print(f'{client.id} |{client.name} | {client.email} | {client.phone} | {client.company} | '
-              f'{client.information}')
-    session.close()
+class ListClient:
+    @staticmethod
+    def list_client():
+        """
+            Utilisation :
+                python main.py client list
+        """
+        if not has_permission("view_all_clients"):
+            print("Vous n'avez pas la permission de voir les clients.")
+            return
+
+        session = Session()
+        clients = session.query(Client).all()
+        for client in clients:
+            print(f"Client {client.id}: {client.name}, {client.email}, {client.company}")
+        session.close()
+
+    @staticmethod
+    def list_client_with_filters():
+        session = Session()
+
+        if has_permission('filter_contracts_unsigned_unpaid'):  # Filtre commerciale (voir contrats non signés)
+            clients = session.query(Client).join(Client.contracts).filter(
+                (Contract.contract_status == False) | (Contract.remains_to_be_paid > 0)).all()
+        elif has_permission('view_all_clients'):
+            # Voir tous les clients pour les rôles autorisés
+            clients = session.query(Client).all()
+        else:
+            print("Vous n'avez pas la permission d'accéder à cette liste.")
+            session.close()
+            return
+
+        print('-------------------- Liste des clients --------------------')
+        for client in clients:
+            print(f"Client {client.id}: {client.name} | {client.email} | {client.company}")
+        session.close()
 
 
-def add_client(name, email, phone, company, information, date_of_first_contract, last_maj, sale_contact_id):
+def add_event_to_sale_client(name, email, phone, company, information, date_of_first_contract, last_maj,
+                             sale_contact_id):
     """
         Utilisation :
             python main.py client add "Nom Client" "email@example.com" "0123456789" "Nom Entreprise" "Informations" 23/05/2024 23/05/2024 1
     """
+    if not has_permission("create_client"):
+        print("Vous n'avez pas la permission d'ajouter un client.")
+        return
+
     session = Session()
 
     # Conversion des dates
@@ -54,6 +84,10 @@ def delete_client(id_client):
     Utilisation :
         python main.py client delete <id_client>
     """
+    if not has_permission("delete_client"):
+        print("Vous n'avez pas la permission de supprimer des clients.")
+        return
+
     session = Session()
 
     client_to_delete = session.query(Client).get(id_client)
@@ -73,6 +107,10 @@ def update_client(client_id, name, email, phone, company, information, date_of_f
     Utilisation :
         python main.py client update <id_client>
     """
+    if not has_permission("update_client"):
+        print("Vous n'avez pas la permission de mettre à jour les informations des clients.")
+        return
+
     session = Session()
 
     client = session.query(Client).get(client_id)
@@ -107,7 +145,7 @@ def client_parser(subparsers):
     client_subparsers = cli_client_parser.add_subparsers(dest="action")
 
     list_parser = client_subparsers.add_parser("list", help="Lister les utilisateurs de SaleTeam")
-    list_parser.set_defaults(func=list_client)
+    list_parser.set_defaults(func=ListClient.list_client)
 
     add_parser = client_subparsers.add_parser("add", help="Ajouter un client à la table Client")
     add_parser.add_argument("name", type=str, help="Nom du client")
@@ -119,7 +157,7 @@ def client_parser(subparsers):
                             help="Date du premier contrat du client (format 'dd/mm/yyyy')")
     add_parser.add_argument("last_maj", type=str, help="Date de la dernière mise à jour (format 'dd/mm/yyyy')")
     add_parser.add_argument("sale_contact_id", type=int, help="ID du commercial dans SaleTeam")
-    add_parser.set_defaults(func=add_client)
+    add_parser.set_defaults(func=add_event_to_sale_client)
 
     delete_parser = client_subparsers.add_parser("delete", help="Supprimer un client à la table Client")
     delete_parser.add_argument("id_client", type=int, help="L'identifiant du client à supprimer")

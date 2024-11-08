@@ -5,7 +5,8 @@ from view.registration_view import registration
 import json
 # import os
 
-from controller.user_route.menu import menu_answer
+# from controller.user_route.menu import menu_answer
+from controller.user_route.menu import general_menu
 # from controller.permissions import PERMISSIONS
 
 
@@ -25,7 +26,8 @@ def login():
             json.dump(session_data, file)
 
         print(f"Utilisateur connecté avec le rôle : {user.team_type}")
-        menu_answer()
+        # menu_answer()
+        general_menu()
 
     else:
         print("Erreur : e-mail ou mot de passe incorrect")

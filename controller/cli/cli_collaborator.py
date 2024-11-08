@@ -1,6 +1,7 @@
 from models.models import Collaborator, SaleTeam, SupportTeam, ManagementTeam
 from config.database import Session
 import bcrypt
+from controller.permissions import has_permission
 
 
 def list_collaborators():

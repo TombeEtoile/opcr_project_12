@@ -1,20 +1,66 @@
 from models.models import Contract, Client, SaleTeam
 from config.database import Session
 from datetime import datetime
+from controller.permissions import has_permission
 
 
-def list_contract():
-    """
-        Utilisation :
-            python main.py contract list
-    """
-    session = Session()
-    contracts = session.query(Contract).all()
-    print('----- Contract -----')
-    for contract in contracts:
-        print(f'{contract.contract_amount} | {contract.remains_to_be_paid} | {contract.contract_creation_date} |'
-              f' {contract.contract_status}')
-    session.close()
+class ListContract:
+    @staticmethod
+    def list_contract():
+        """
+            Utilisation :
+                python main.py contract list
+        """
+        session = Session()
+
+        if not has_permission("view_all_contracts"):
+            print("Vous n'avez pas la permission de voir les contrats.")
+            return
+
+        contracts = session.query(Contract).all()
+
+        for contract in contracts:
+            print('----- Contract -----')
+            print(f"Contract {contract.id}: {contract.contract_amount} | Status: {contract.contract_status}")
+        session.close()
+
+    @staticmethod
+    def list_unsigned_contract():
+        """
+            Affiche tous les contrats qui ne sont pas encore signés.
+        """
+        session = Session()
+        contracts = session.query(Contract).filter(Contract.contract_status == False).all()
+
+        if not contracts:
+            print("Aucun contrat non signé trouvé.")
+        else:
+            print("'----- Contrats non signés -----'")
+            for contract in contracts:
+                print(
+                    f"Contrat ID = {contract.id} | Montant = {contract.contract_amount} | "
+                    f"Date de création = {contract.contract_creation_date}")
+
+        session.close()
+
+    @staticmethod
+    def list_unpayed_contract():
+        """
+            Affiche tous les contrats qui ne sont pas encore payés.
+        """
+        session = Session()
+        contracts = session.query(Contract).filter(Contract.remains_to_be_paid != 0).all()
+        if not contracts:
+            print("Aucun contrat non payé trouvé.")
+        else:
+            print("'----- Contrats non payés -----'")
+            for contract in contracts:
+                print(
+                    f"Contrat ID = {contract.id} | Montant = {contract.contract_amount} | "
+                    f"Reste à payer = {contract.remains_to_be_paid}"
+                    f"Date de création = {contract.contract_creation_date}")
+
+        session.close()
 
 
 def add_contract(contract_amount, remains_to_be_paid, contract_creation_date, contract_status,
@@ -105,7 +151,7 @@ def contract_parser(subparsers):
     contract_subparsers = cli_contract_parser.add_subparsers(dest="action")
 
     list_parser = contract_subparsers.add_parser("list", help="Lister les lignes de la table Contract")
-    list_parser.set_defaults(func=list_contract)
+    list_parser.set_defaults(func=ListContract.list_contract)
 
     add_parser = contract_subparsers.add_parser("add", help="Ajouter un contract à la table Contract")
     add_parser.add_argument("contract_amount", type=float, help="Montant du contrat")

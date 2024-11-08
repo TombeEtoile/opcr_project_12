@@ -18,29 +18,31 @@ PERMISSIONS = {
 }
 """
 PERMISSIONS = {
-    "management": {
-        "create_collaborator",
-        "update_collaborator",
-        "delete_collaborator",
-        "create_contract",
-        "update_contract",
-        "list_events",
-        "filter_events_no_support",
-        "update_event",
-        "assign_support_to_event"
+    "gestion": {
+        "view_all_clients", "view_all_contracts", "view_all_events", "view_all_collaborators",  # all view accorded
+        "filter_events_no_support",  # filtered view
+        "create_collaborator", "create_contract",  # add
+        "update_collaborator", "update_event", "assign_support_to_event",  # update
+        "delete_collaborator", "update_contract"  # delete
     },
-    "sales": {
-        "create_client",
-        "update_client",
-        "update_contract",
-        "filter_contracts_unsigned_unpaid",
-        "create_event_for_signed_client"
+    "commercial": {
+        "view_all_clients", "view_all_contracts", "view_all_events", "view_all_collaborators",  # all view accorded
+        "filter_contracts_unsigned_unpaid",  # filtered view
+        "create_client", "create_event_for_signed_client",  # add
+        "update_client", "update_contract"  # update
     },
     "support": {
-        "list_events_assigned",
-        "update_event_assigned"
+        "view_all_clients", "view_all_contracts", "view_all_events", "view_all_collaborators",  # all view accorded
+        "list_events_assigned",  # filtered view
+        "update_event_assigned"  # update
     }
 }
+
+"""
+Gestion --> Filtrer affichage événements --> afficher tous les événements qui n’ont pas de « support » associé.
+Commercial --> Filtrer affichage des contrats --> afficher tous les contrats qui ne sont pas encore signés, ou qui ne sont pas encore
+entièrement payés.
+"""
 
 
 def has_permission(action):

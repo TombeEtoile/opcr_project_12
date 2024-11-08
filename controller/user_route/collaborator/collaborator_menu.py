@@ -1,4 +1,4 @@
-from view.menu_view import menu
+"""from view.menu_view import menu
 from view.collaborator.collaborator_menu_view import collaborator_menu
 from controller.cli.cli_collaborator import (list_collaborators, add_collaborator, update_collaborator,
                                              delete_collaborator)
@@ -57,3 +57,4 @@ def delete_collaborator_prompt():
     collaborator_to_delete = int(input('ID du collaborateur à supprimer : '))
 
     delete_collaborator(collaborator_to_delete)
+"""

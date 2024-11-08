@@ -1,26 +1,24 @@
-from view.menu_view import menu
-from controller.user_route.contract.contract_menu import contract_menu_answer
-from controller.user_route.event.event_menu import event_menu_answer
-from controller.user_route.client.client_menu import client_menu_answer
-from controller.user_route.collaborator.collaborator_menu import collaborator_menu_answer
+import json
+
+from controller.user_route.commercial.commercial_menu_controller import commercial_menu_controller
+from controller.user_route.gestion.gestion_menu_controller import gestion_menu_controller
+from controller.user_route.support.support_menu_controller import support_menu_controller
 from controller.user_route.logout import logout
 
 
-def menu_answer():
-    while True:
-        user_answer = menu()
-        if user_answer == '1':
-            contract_menu_answer()
-        elif user_answer == '2':
-            event_menu_answer()
-        elif user_answer == '3':
-            client_menu_answer()
-        elif user_answer == '4':
-            collaborator_menu_answer()
-        elif user_answer == '5':
-            print('-------------------- Déconnexion réussie --------------------')
-            logout()
-            break
-        else:
-            print(f'Erreur : valeur non acceptée ({user_answer})')
+def general_menu():
+    """
+    Menu principal qui dirige vers les sous-menus en fonction du rôle.
+    """
+    with open("session_token.json", "r") as file:
+        user_data = json.load(file)
 
+    if user_data["team_type"] == "gestion":
+        gestion_menu_controller()
+    elif user_data["team_type"] == "commercial":
+        commercial_menu_controller()
+    elif user_data["team_type"] == "support":
+        support_menu_controller()
+    else:
+        print("Type d'équipe non reconnu. Déconnexion.")
+        logout()

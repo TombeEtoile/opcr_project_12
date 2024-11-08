@@ -1,21 +1,69 @@
 from models.models import Event, Client, Contract, SupportTeam
 from config.database import Session
 from datetime import datetime
+from controller.permissions import has_permission
+import json
 
 
-def list_event():
-    """
-    Utilisation :
-        python main.py event list
-    """
-    session = Session()
-    events = session.query(Event).all()
-    print('----- Event -----')
-    for event in events:
-        print(f'{event.client_name} | {event.client_email} | {event.client_tel} | {event.event_date_start} | '
-              f'{event.event_date_end} | {event.support_contact} | '
-              f'{event.location} | {event.attendees} | {event.note}')
-    session.close()
+def get_current_user_id():
+    """Récupère l'ID de l'utilisateur connecté depuis le fichier de session."""
+    try:
+        with open("session_token.json", "r") as file:
+            session_data = json.load(file)
+            return session_data.get("id")
+    except (FileNotFoundError, KeyError):
+        print("Aucun utilisateur connecté.")
+        return None
+
+
+class ListEvent:
+    @staticmethod
+    def list_event():
+        """
+        Utilisation :
+            python main.py event list
+        """
+        session = Session()
+
+        if not has_permission("view_all_events"):
+            print("Vous n'avez pas la permission de voir les événements.")
+            return
+
+        events = session.query(Event).all()
+        print('----- Event -----')
+        for event in events:
+            print(f'{event.client_name} | {event.client_email} | {event.client_tel} | {event.event_date_start} | '
+                  f'{event.event_date_end} | {event.support_contact} | '
+                  f'{event.location} | {event.attendees} | {event.note}')
+        session.close()
+
+    @staticmethod
+    def list_event_without_support():
+        session = Session()
+        events = session.query(Event).filter(Event.id_support_team == '').all()
+
+        if not events:
+            print("Aucun événements n'ayant aucun support atitré n'a été trouvé.")
+        else:
+            print("'----- Évenement(s) n'ayant aucun support atitré -----'")
+            for event in events:
+                print(f'{event.client_name} | {event.client_email} | {event.client_tel} | {event.event_date_start} | '
+                      f'{event.event_date_end} | {event.location} | {event.attendees} | {event.note}')
+
+        session.close()
+
+    @staticmethod
+    def list_event_dedicated_to_a_support():
+        session = Session()
+        events = session.query(Event).filter(Event.id_support_team == SupportTeam.id).all()
+
+        if not events:
+            print("Vous n'avez pas d'événements qui vous sont atitrés.")
+        else:
+            print("'----- Évenement(s) vous étant atitré(s) -----'")
+            for event in events:
+                print(f'{event.client_name} | {event.client_email} | {event.client_tel} | {event.event_date_start} | '
+                      f'{event.event_date_end} | {event.location} | {event.attendees} | {event.note}')
 
 
 def add_event(event_date_start, event_date_end, location, attendees, note, id_contract, id_client, id_support_team):
@@ -89,12 +137,17 @@ def update_event(event_id, event_date_start, event_date_end, location, attendees
     Utilisation :
         python main.py event modify <event>
     """
-    session = Session()
+    if has_permission('update_event_assigned'):
+        print("Vous n'avez pas la permission de modifier cet événement.")
+        return
 
-    event = session.query(Event).get(event_id)
+    session = Session()
+    current_user_id = get_current_user_id()
+
+    event = session.query(Event).filter_by(id=event_id, id_support_team=current_user_id).first()
 
     if not event:
-        print(f"Erreur : Aucun event trouvé avec l'ID {event_id}")
+        print(f"Erreur : Aucun événement trouvé avec l'ID {event_id} ou il n'est pas attribué à cet utilisateur.")
         session.close()
         return
 
@@ -125,7 +178,7 @@ def event_parser(subparsers):
     event_subparsers = cli_event_parser.add_subparsers(dest="action")
 
     list_parser = event_subparsers.add_parser("list", help="Lister les lignes de la table Contract")
-    list_parser.set_defaults(func=list_event)
+    list_parser.set_defaults(func=ListEvent.list_event)
 
     add_parser = event_subparsers.add_parser("add", help="Ajouter un event à la table Event")
     add_parser.add_argument("event_date_start", type=str,

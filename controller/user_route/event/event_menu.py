@@ -1,12 +1,12 @@
-from view.menu_view import menu
+"""from view.menu_view import menu
 from view.event.event_menu_view import event_menu
-from controller.cli.cli_event import list_event, add_event, update_event, delete_event
+from controller.cli.cli_event import ListEvent, add_event, update_event, delete_event
 
 
 def event_menu_answer():
     user_answer = event_menu()
     if user_answer == '1':  # list
-        list_event()
+        ListEvent.list_event()
         menu()
     elif user_answer == '2':  # add
         add_event_prompt()
@@ -63,3 +63,4 @@ def update_event_prompt():
 def delete_event_prompt():
     event_id = int(input("ID de l'événement à modifier : "))
     delete_event(event_id)
+"""

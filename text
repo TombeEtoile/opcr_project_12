@@ -1,0 +1,37 @@
+commercial_menu()
+- list
+   - list client
+   - list contract
+   - filter --> unsigned contract
+   - filter --> unpayed contract
+   - list event
+- add
+   - add client
+   - add event for his client
+- update
+   - client
+
+support_menu()
+- list
+   - list client
+   - filter --> his events
+   - list contract
+   - list event
+- update
+   - his events
+
+gestion_menu()
+- list
+   - list client
+   - list contract
+   - list event
+   - filter --> un(supported) event
+- add
+   - collaborator
+   - contract
+- update
+   - collaborator
+   - contract
+   - event(support lié)
+- delete
+   - collaborator

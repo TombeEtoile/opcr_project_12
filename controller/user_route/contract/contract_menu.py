@@ -1,12 +1,12 @@
-from view.menu_view import menu
+"""from view.menu_view import menu
 from view.contract.contract_menu_view import contract_menu
-from controller.cli.cli_contract import list_contract, add_contract, update_contract, delete_contract
+from controller.cli.cli_contract import ListContract, add_contract, update_contract, delete_contract
 
 
 def contract_menu_answer():
     user_answer = contract_menu()
     if user_answer == '1':  # list
-        list_contract()
+        ListContract.list_contract()
         menu()
     elif user_answer == '2':  # add
         add_contract_prompt()
@@ -59,3 +59,4 @@ def update_contract_prompt():
 def delete_contract_prompt():
     contract_id = int(input('ID du contrat à supprimer : '))
     delete_contract(contract_id)
+"""

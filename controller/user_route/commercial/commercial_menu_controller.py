@@ -1,23 +1,35 @@
-"""from view.menu_view import menu
-from view.client.client_menu_view import client_menu
-from controller.cli.cli_client import ListClient, add_event_to_sale_client, update_client, delete_client
+from view.commercial.commercial_menu_view import commercial_menu_view
 
+from controller.user_route.logout import logout
 from controller.permissions import has_permission
-# from controller.user_route.menu import menu_answer
+
+from controller.cli.cli_client import ListClient, add_event_to_sale_client, update_client
+from controller.cli.cli_contract import ListContract
+from controller.cli.cli_event import ListEvent
 
 
-def client_menu_answer():
+def commercial_menu_controller():
     while True:
-        user_answer = client_menu()
-        if user_answer == '1':  # list
+        user_answer = commercial_menu_view()
+        if user_answer == '1':  # Lister les clients
             ListClient.list_client()
-        elif user_answer == '2':  # add
+        elif user_answer == '2':  # Lister les contrats
+            ListContract.list_contract()
+        elif user_answer == '3':  # Lister les contrats non signés
+            ListContract.list_unsigned_contract()
+        elif user_answer == '4':  # Lister les contrats non payés
+            ListContract.list_unpayed_contract()
+        elif user_answer == '5':  # Lister les événements
+            ListEvent.list_event()
+        elif user_answer == '6':  # Ajouter un client
             add_client_prompt()
-        elif user_answer == '3':  # update
+        elif user_answer == '7':  # Ajouter un événement pour un de vos clients
+            add_client_prompt()
+        elif user_answer == '8':  # Modifier un client
             update_client_prompt()
-        elif user_answer == '4':  # delete
-            delete_client_prompt()
-        elif user_answer == '5':  # menu
+        elif user_answer == '9':  # Déconnexion
+            print('-------------------- Déconnexion réussie --------------------')
+            logout()
             break
         else:
             print(f'Erreur : valeur non acceptée ({user_answer})')
@@ -63,9 +75,3 @@ def update_client_prompt():
         last_maj=last_maj if last_maj else None,
         sale_contact_id=int(sale_contact_id) if sale_contact_id else None
     )
-
-
-def delete_client_prompt():
-    client_id = int(input('ID du client à supprimer : '))
-    delete_client(client_id)
-"""
